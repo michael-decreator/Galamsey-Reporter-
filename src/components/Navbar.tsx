@@ -1,3 +1,5 @@
+import { NavLink } from "react-router"
+
 function Navbar() {
   return (
     <nav className="flex items-center justify-between border-b bg-white px-8 py-4">
@@ -6,17 +8,17 @@ function Navbar() {
       </h2>
 
       <div className="flex gap-6">
-        <a href="/" className="text-gray-700 hover:text-green-800">
+        <NavLink to="/" className="text-gray-700 hover:text-green-800">
           Home
-        </a>
+        </NavLink>
 
-        <a href="/report" className="text-gray-700 hover:text-green-800">
+        <NavLink to="/report" className="text-gray-700 hover:text-green-800">
           Report Activity
-        </a>
+        </NavLink>
 
-        <a href="/about" className="text-gray-700 hover:text-green-800">
+        <NavLink to="/about" className="text-gray-700 hover:text-green-800">
           About
-        </a>
+        </NavLink>
       </div>
     </nav>
   )
