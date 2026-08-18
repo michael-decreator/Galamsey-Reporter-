@@ -1,71 +1,17 @@
-
-
 function Home() {
   return (
-    <>
-      <main className="min-h-screen bg-gray-100 p-8">
-        <h1 className="text-4xl font-bold text-green-800">
-          Galamsey Reporter
+    <main className="min-h-screen bg-gray-100 flex justify-center items-start pt-12 px-4">
+      <div className="w-full max-w-md rounded-2xl bg-white p-12 shadow-lg min-h-[400px]">
+        <h1 className="text-3xl font-bold text-gray-900">
+          Report Illegal Mining
         </h1>
 
-        <p className="mt-4 text-gray-700">
-          A platform for reporting and monitoring illegal mining activities.
+        <p className="mt-2 text-gray-600">
+          Help protect Ghana's land & water. Your report is anonymous.
         </p>
-      </main>
-    </>
+      </div>
+    </main>
   )
 }
 
 export default Home
-
-
-
-
-
-
-
-
-
-
-
-
-// import Navbar from "../components/Navbar"
-
-// function Home() {
-//     return(
-//         <>
-//         <Navbar />
-//         <main>
-//             <h1>Galamsey Reporter</h1>
-//             <p>
-//                 A platform for reporting and monitoring illegal mining activities
-//             </p>
-//         </main>
-//         </>
-//     )
-// }
-
-// export default Home
-
-
-
-
-
-
-
-
-
-
-
-// // function Home() {
-// //     return (
-// //         <main>
-// //             <h1>Galamsey Reporter</h1>
-// //             <p>
-// //                 A platform for reporting and monitoring illegal mining activities
-// //             </p>
-// //         </main>
-// //     )
-// // }
-
-// // export default Home
