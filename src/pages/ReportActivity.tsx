@@ -1,9 +1,11 @@
 import { useRef, useState, type ChangeEvent } from "react"
+import { submitReport } from "../services/reportService"
 
 function ReportActivity() {
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  const [photo, setPhoto] = useState<string | null>(null)
+  const [photoFile, setPhotoFile] = useState<File | null>(null)
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null)
 
   const [location, setLocation] = useState<{
     latitude: number
@@ -20,7 +22,8 @@ function ReportActivity() {
     const file = event.target.files?.[0]
 
     if (file) {
-      setPhoto(URL.createObjectURL(file))
+      setPhotoFile(file)
+      setPhotoPreview(URL.createObjectURL(file))
       setFormError("")
     }
   }
@@ -47,10 +50,10 @@ function ReportActivity() {
     )
   }
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     setFormError("")
 
-    if (!photo) {
+    if (!photoFile) {
       setFormError("Please take or select a photo.")
       return
     }
@@ -65,7 +68,22 @@ function ReportActivity() {
       return
     }
 
-    alert("Report is ready to be submitted.")
+    try {
+      const title = `Report - ${new Date().toLocaleDateString()}`
+      const locationString = `${location.latitude},${location.longitude}`
+
+      const reportId = await submitReport(
+        photoFile,
+        title,
+        description,
+        locationString
+      )
+
+      alert(`Report submitted successfully! Report ID: ${reportId}`)
+    } catch (error) {
+      console.error("Submission failed:", error)
+      setFormError("Something went wrong submitting your report. Please try again.")
+    }
   }
 
   return (
@@ -86,9 +104,9 @@ function ReportActivity() {
           </h2>
 
           <div className="flex min-h-44 flex-col items-center justify-center rounded-xl border-2 border-dashed border-gray-300 bg-gray-50 p-4 sm:min-h-48 sm:p-6">
-            {photo ? (
+            {photoPreview ? (
               <img
-                src={photo}
+                src={photoPreview}
                 alt="Selected evidence"
                 className="mb-4 max-h-64 w-full rounded-lg object-cover"
               />

@@ -35,17 +35,6 @@ function Home() {
         <p className="mt-2 text-gray-600">
           Help protect Ghana's land & water. Your report is anonymous.
         </p>
-        <div style={{ margin: "20px 0", padding: "20px", border: "2px dashed red" }}>
-  <p>upload test</p>
-  <input
-    type="file"
-    accept="image/*"
-    onChange={(e) => setTestFile(e.target.files?.[0] ?? null)}
-  />
-  <button onClick={handleTestSubmit}>click here to Submit Report</button>
-</div>
-
-      
       </div>
     </main>
   )
