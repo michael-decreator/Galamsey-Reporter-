@@ -2,7 +2,6 @@ import { addDoc, collection, Timestamp } from "firebase/firestore"
 import { db } from "./firebase"
 import type { ReportData } from "../types/report"
 
-
 export const createReport = async (report: ReportData) => {
   const reportRef = await addDoc(collection(db, "reports"), {
     ...report,
@@ -10,4 +9,43 @@ export const createReport = async (report: ReportData) => {
   })
 
   return reportRef.id
+}
+
+export const uploadReportPhoto = async (file: File): Promise<string> => {
+  const formData = new FormData()
+  formData.append("file", file)
+  formData.append("upload_preset", "galamsey_reports")
+
+  const response = await fetch(
+    "https://api.cloudinary.com/v1_1/fi6umbdy/image/upload",
+    {
+      method: "POST",
+      body: formData,
+    }
+  )
+
+  if (!response.ok) {
+    throw new Error("Photo upload failed")
+  }
+
+  const data = await response.json()
+  return data.secure_url
+}
+
+export const submitReport = async (
+  file: File,
+  title: string,
+  description: string,
+  location: string
+): Promise<string> => {
+  const photoUrl = await uploadReportPhoto(file)
+
+  const reportId = await createReport({
+    title,
+    description,
+    location,
+    photoUrl,
+  })
+
+  return reportId
 }
