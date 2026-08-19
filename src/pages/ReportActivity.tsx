@@ -1,8 +1,193 @@
+import { useRef, useState, type ChangeEvent } from "react"
+
 function ReportActivity() {
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  const [photo, setPhoto] = useState<string | null>(null)
+
+  const [location, setLocation] = useState<{
+    latitude: number
+    longitude: number
+  } | null>(null)
+
+  const [locationError, setLocationError] = useState("")
+
+  const [description, setDescription] = useState("")
+
+  const [formError, setFormError] = useState("")
+
+  const handlePhotoChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+
+    if (file) {
+      setPhoto(URL.createObjectURL(file))
+      setFormError("")
+    }
+  }
+
+  const handleDetectLocation = () => {
+    if (!navigator.geolocation) {
+      setLocationError("Location is not supported by your browser.")
+      return
+    }
+
+    setLocationError("")
+    setFormError("")
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setLocation({
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude,
+        })
+      },
+      () => {
+        setLocationError("Unable to detect your location.")
+      },
+    )
+  }
+
+  const handleSubmit = () => {
+    setFormError("")
+
+    if (!photo) {
+      setFormError("Please take or select a photo.")
+      return
+    }
+
+    if (!location) {
+      setFormError("Please detect your location.")
+      return
+    }
+
+    if (!description.trim()) {
+      setFormError("Please describe what you observed.")
+      return
+    }
+
+    alert("Report is ready to be submitted.")
+  }
+
   return (
-    <div>
-      <h1>Report Activity page</h1>
-     
+    <div className="min-h-screen bg-gray-100 px-3 py-6 sm:px-4 sm:py-8">
+      <div className="mx-auto w-full max-w-2xl rounded-2xl bg-white p-4 shadow-md sm:p-6">
+        <h1 className="mb-2 text-xl font-bold text-gray-900 sm:text-2xl">
+          Report Illegal Mining
+        </h1>
+
+        <p className="mb-6 text-gray-600">
+          Your report can be submitted anonymously.
+        </p>
+
+        {/* Photo Section */}
+        <div className="mb-6">
+          <h2 className="mb-3 text-lg font-semibold text-gray-800">
+            Photo Evidence
+          </h2>
+
+          <div className="flex min-h-44 flex-col items-center justify-center rounded-xl border-2 border-dashed border-gray-300 bg-gray-50 p-4 sm:min-h-48 sm:p-6">
+            {photo ? (
+              <img
+                src={photo}
+                alt="Selected evidence"
+                className="mb-4 max-h-64 w-full rounded-lg object-cover"
+              />
+            ) : (
+              <p className="mb-4 text-center text-gray-500">
+                Take a photo or select one from your device
+              </p>
+            )}
+
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              className="w-full rounded-lg bg-green-700 px-5 py-3 font-medium text-white transition hover:bg-green-800 sm:w-auto"
+            >
+              Take Photo
+            </button>
+
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              capture="environment"
+              onChange={handlePhotoChange}
+              className="hidden"
+            />
+          </div>
+        </div>
+
+        {/* Location Section */}
+        <div className="mb-6">
+          <h2 className="mb-3 text-lg font-semibold text-gray-800">
+            Location
+          </h2>
+
+          <div className="rounded-xl border border-gray-300 bg-gray-50 p-4">
+            <button
+              type="button"
+              onClick={handleDetectLocation}
+              className="w-full rounded-lg border border-green-700 px-5 py-3 font-medium text-green-700 transition hover:bg-green-50 sm:w-auto"
+            >
+              Auto Detect Location
+            </button>
+
+            {location && (
+              <p className="mt-3 break-words text-sm text-gray-600">
+                Location detected: {location.latitude.toFixed(6)},{" "}
+                {location.longitude.toFixed(6)}
+              </p>
+            )}
+
+            {locationError && (
+              <p className="mt-3 text-sm text-red-600">
+                {locationError}
+              </p>
+            )}
+          </div>
+        </div>
+
+        {/* Description Section */}
+        <div className="mb-6">
+          <h2 className="mb-3 text-lg font-semibold text-gray-800">
+            Description
+          </h2>
+
+          <textarea
+            value={description}
+            onChange={(event) => {
+              setDescription(event.target.value)
+              setFormError("")
+            }}
+            placeholder="Describe what you observed..."
+            rows={5}
+            maxLength={500}
+            className="w-full resize-none rounded-xl border border-gray-300 bg-gray-50 p-4 text-gray-800 outline-none transition focus:border-green-700 focus:ring-2 focus:ring-green-100"
+          />
+
+          <div className="mt-2 flex justify-end">
+            <span className="text-sm text-gray-500">
+              {description.length}/500
+            </span>
+          </div>
+        </div>
+
+        {/* Form Error */}
+        {formError && (
+          <p className="mb-4 text-sm font-medium text-red-600">
+            {formError}
+          </p>
+        )}
+
+        {/* Send Report Button */}
+        <button
+          type="button"
+          onClick={handleSubmit}
+          className="w-full rounded-xl bg-green-700 px-6 py-3 font-semibold text-white transition hover:bg-green-800"
+        >
+          Send Report
+        </button>
+      </div>
     </div>
   )
 }
