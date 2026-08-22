@@ -1,8 +1,10 @@
 import { useRef, useState, type ChangeEvent } from "react"
 import { submitReport } from "../services/reportService"
+import { useNavigate } from "react-router-dom"
 
 function ReportActivity() {
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const navigate = useNavigate()
 
   const [photoFile, setPhotoFile] = useState<File | null>(null)
   const [photoPreview, setPhotoPreview] = useState<string | null>(null)
@@ -17,6 +19,8 @@ function ReportActivity() {
   const [description, setDescription] = useState("")
 
   const [formError, setFormError] = useState("")
+  const [isDetectingLocation, setIsDetectingLocation] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const handlePhotoChange = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
@@ -36,6 +40,7 @@ function ReportActivity() {
 
     setLocationError("")
     setFormError("")
+    setIsDetectingLocation(true)
 
     navigator.geolocation.getCurrentPosition(
       (position) => {
@@ -43,9 +48,11 @@ function ReportActivity() {
           latitude: position.coords.latitude,
           longitude: position.coords.longitude,
         })
+        setIsDetectingLocation(false)
       },
       () => {
         setLocationError("Unable to detect your location.")
+        setIsDetectingLocation(false)
       },
     )
   }
@@ -68,21 +75,25 @@ function ReportActivity() {
       return
     }
 
+    setIsSubmitting(true)
+
     try {
       const title = `Report - ${new Date().toLocaleDateString()}`
       const locationString = `${location.latitude},${location.longitude}`
 
-      const reportId = await submitReport(
+      await submitReport(
         photoFile,
         title,
         description,
         locationString
       )
 
-      alert(`Report submitted successfully! Report ID: ${reportId}`)
+      navigate("/success")
     } catch (error) {
       console.error("Submission failed:", error)
       setFormError("Something went wrong submitting your report. Please try again.")
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
@@ -145,9 +156,10 @@ function ReportActivity() {
             <button
               type="button"
               onClick={handleDetectLocation}
-              className="w-full rounded-lg border border-green-700 px-5 py-3 font-medium text-green-700 transition hover:bg-green-50 sm:w-auto"
+              disabled={isDetectingLocation}
+              className="w-full rounded-lg border border-green-700 px-5 py-3 font-medium text-green-700 transition hover:bg-green-50 disabled:opacity-50 sm:w-auto"
             >
-              Auto Detect Location
+              {isDetectingLocation ? "Detecting..." : "Auto Detect Location"}
             </button>
 
             {location && (
@@ -201,9 +213,10 @@ function ReportActivity() {
         <button
           type="button"
           onClick={handleSubmit}
-          className="w-full rounded-xl bg-green-700 px-6 py-3 font-semibold text-white transition hover:bg-green-800"
+          disabled={isSubmitting}
+          className="w-full rounded-xl bg-green-700 px-6 py-3 font-semibold text-white transition hover:bg-green-800 disabled:opacity-50"
         >
-          Send Report
+          {isSubmitting ? "Sending..." : "Send Report"}
         </button>
       </div>
     </div>

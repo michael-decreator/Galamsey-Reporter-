@@ -1,7 +1,6 @@
-import { addDoc, collection, Timestamp } from "firebase/firestore"
+import { addDoc, collection, Timestamp, onSnapshot, orderBy, query } from "firebase/firestore"
 import { db } from "./firebase"
 import type { ReportData } from "../types/report"
-
 
 export const createReport = async (report: ReportData) => {
   const reportRef = await addDoc(collection(db, "reports"), {
@@ -49,4 +48,20 @@ export const submitReport = async (
   })
 
   return reportId
+}
+
+export function subscribeToReports(
+  callback: (reports: (ReportData & { id: string })[]) => void
+) {
+  const reportsQuery = query(collection(db, "reports"), orderBy("createdAt", "desc"))
+
+  const unsubscribe = onSnapshot(reportsQuery, (snapshot) => {
+    const reports = snapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...(doc.data() as ReportData),
+    }))
+    callback(reports)
+  })
+
+  return unsubscribe
 }
