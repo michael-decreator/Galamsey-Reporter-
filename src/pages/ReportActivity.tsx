@@ -26,9 +26,23 @@ function ReportActivity() {
     const file = event.target.files?.[0]
 
     if (file) {
+      if (photoPreview) {
+        URL.revokeObjectURL(photoPreview)
+      }
       setPhotoFile(file)
       setPhotoPreview(URL.createObjectURL(file))
       setFormError("")
+    }
+  }
+//remove photo function
+    const handleRemovePhoto = () => {
+    if (photoPreview) {
+      URL.revokeObjectURL(photoPreview)
+    }
+    setPhotoFile(null)
+    setPhotoPreview(null)
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ""
     }
   }
 
@@ -114,7 +128,7 @@ function ReportActivity() {
             Photo Evidence
           </h2>
 
-          <div className="flex min-h-44 flex-col items-center justify-center rounded-xl border-2 border-dashed border-gray-300 bg-gray-50 p-4 sm:min-h-48 sm:p-6">
+                    <div className="flex min-h-44 flex-col items-center justify-center rounded-xl border-2 border-dashed border-gray-300 bg-gray-50 p-4 sm:min-h-48 sm:p-6">
             {photoPreview ? (
               <img
                 src={photoPreview}
@@ -127,13 +141,33 @@ function ReportActivity() {
               </p>
             )}
 
-            <button
-              type="button"
-              onClick={() => fileInputRef.current?.click()}
-              className="w-full rounded-lg bg-green-700 px-5 py-3 font-medium text-white transition hover:bg-green-800 sm:w-auto"
-            >
-              Take Photo
-            </button>
+            {photoPreview ? (
+              <div className="flex w-full gap-3 sm:w-auto">
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="flex-1 rounded-lg bg-green-700 px-5 py-3 font-medium text-white transition hover:bg-green-800 sm:flex-none"
+                >
+                  Change Photo
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleRemovePhoto}
+                  className="flex-1 rounded-lg border border-red-300 px-5 py-3 font-medium text-red-600 transition hover:bg-red-50 sm:flex-none"
+                >
+                  Remove
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="w-full rounded-lg bg-green-700 px-5 py-3 font-medium text-white transition hover:bg-green-800 sm:w-auto"
+              >
+                Take Photo
+              </button>
+            )}
 
             <input
               ref={fileInputRef}
