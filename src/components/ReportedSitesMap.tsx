@@ -39,7 +39,7 @@ function ReportedSitesMap() {
 
   if (loadError) {
     return (
-      <div className="flex h-64 w-full items-center justify-center rounded-xl bg-gray-100 p-4 sm:h-80">
+      <div className="flex h-56 w-full items-center justify-center rounded-xl bg-gray-100 p-4 sm:h-72 md:h-96 lg:h-[550px]">
         <p className="text-center text-red-600">
           Unable to load Google Maps.
         </p>
@@ -49,14 +49,14 @@ function ReportedSitesMap() {
 
   if (!isLoaded) {
     return (
-      <div className="flex h-64 w-full items-center justify-center rounded-xl bg-gray-100 sm:h-80">
+      <div className="flex h-56 w-full items-center justify-center rounded-xl bg-gray-100 sm:h-72 md:h-96 lg:h-[550px]">
         <p className="text-gray-500">Loading map...</p>
       </div>
     )
   }
 
   return (
-    <div className="h-64 w-full overflow-hidden rounded-xl sm:h-80">
+    <div className="h-56 w-full overflow-hidden rounded-xl sm:h-72 md:h-96 lg:h-[550px]">
       <GoogleMap
         mapContainerStyle={containerStyle}
         center={mapCenter}

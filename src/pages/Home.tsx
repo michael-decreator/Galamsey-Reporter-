@@ -3,7 +3,7 @@ import ReportedSitesMap from "../components/ReportedSitesMap"
 function Home() {
   return (
     <main className="min-h-screen bg-gray-100 px-3 py-6 sm:px-4 sm:py-12">
-      <div className="mx-auto w-full max-w-3xl rounded-2xl bg-white p-4 shadow-lg sm:p-8">
+      <div className="mx-auto w-full max-w-5xl rounded-2xl bg-white p-4 shadow-lg sm:p-10">
         <h1 className="text-2xl font-bold text-gray-900 sm:text-3xl">
           Report Illegal Mining
         </h1>
