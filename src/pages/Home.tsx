@@ -3,28 +3,18 @@ import ReportedSitesMap from "../components/ReportedSitesMap"
 function Home() {
   return (
     <main className="min-h-screen bg-gray-100 px-3 py-6 sm:px-4 sm:py-12">
-      <div className="mx-auto w-full max-w-5xl rounded-2xl bg-white p-4 shadow-lg sm:p-10">
-        <h1 className="text-2xl font-bold text-gray-900 sm:text-3xl">
-          Report Illegal Mining
-        </h1>
-
-        <p className="mt-2 text-sm text-gray-600 sm:text-base">
-          Help protect Ghana&apos;s land &amp; water. Your report is anonymous.
-        </p>
-
-        <section className="mt-8 sm:mt-10">
-          <h2 className="text-xl font-semibold text-gray-900 sm:text-2xl">
+      <div className="mx-auto w-full max-w-5xl">
+        <div className="rounded-2xl bg-white p-4 shadow-lg sm:p-6">
+          <h1 className="mb-2 text-2xl font-bold text-gray-900">
             Reported Sites Nearby
-          </h2>
+          </h1>
 
-          <p className="mt-1 text-sm text-gray-600">
-            Sample locations shown below. Live reports will appear here soon.
+          <p className="mb-5 text-sm text-gray-600">
+            View reported environmental sites around your location.
           </p>
 
-          <div className="mt-4">
-            <ReportedSitesMap />
-          </div>
-        </section>
+          <ReportedSitesMap />
+        </div>
       </div>
     </main>
   )

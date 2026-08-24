@@ -29,18 +29,22 @@ function ReportActivity() {
       if (photoPreview) {
         URL.revokeObjectURL(photoPreview)
       }
+
       setPhotoFile(file)
       setPhotoPreview(URL.createObjectURL(file))
       setFormError("")
     }
   }
-//remove photo function
-    const handleRemovePhoto = () => {
+
+  // Remove photo function
+  const handleRemovePhoto = () => {
     if (photoPreview) {
       URL.revokeObjectURL(photoPreview)
     }
+
     setPhotoFile(null)
     setPhotoPreview(null)
+
     if (fileInputRef.current) {
       fileInputRef.current.value = ""
     }
@@ -62,12 +66,43 @@ function ReportActivity() {
           latitude: position.coords.latitude,
           longitude: position.coords.longitude,
         })
+
+        setLocationError("")
         setIsDetectingLocation(false)
       },
-      () => {
-        setLocationError("Unable to detect your location.")
+      (error) => {
         setIsDetectingLocation(false)
+
+        switch (error.code) {
+          case error.PERMISSION_DENIED:
+            setLocationError(
+              "Location permission was denied. Please allow location access and try again."
+            )
+            break
+
+          case error.POSITION_UNAVAILABLE:
+            setLocationError(
+              "Your location could not be determined. Please check your GPS or network connection and try again."
+            )
+            break
+
+          case error.TIMEOUT:
+            setLocationError(
+              "Location detection timed out. Please try again."
+            )
+            break
+
+          default:
+            setLocationError(
+              "Unable to detect your location. Please try again."
+            )
+        }
       },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0,
+      }
     )
   }
 
@@ -105,7 +140,9 @@ function ReportActivity() {
       navigate("/success")
     } catch (error) {
       console.error("Submission failed:", error)
-      setFormError("Something went wrong submitting your report. Please try again.")
+      setFormError(
+        "Something went wrong submitting your report. Please try again."
+      )
     } finally {
       setIsSubmitting(false)
     }
@@ -128,7 +165,7 @@ function ReportActivity() {
             Photo Evidence
           </h2>
 
-                    <div className="flex min-h-44 flex-col items-center justify-center rounded-xl border-2 border-dashed border-gray-300 bg-gray-50 p-4 sm:min-h-48 sm:p-6">
+          <div className="flex min-h-44 flex-col items-center justify-center rounded-xl border-2 border-dashed border-gray-300 bg-gray-50 p-4 sm:min-h-48 sm:p-6">
             {photoPreview ? (
               <img
                 src={photoPreview}
@@ -193,7 +230,9 @@ function ReportActivity() {
               disabled={isDetectingLocation}
               className="w-full rounded-lg border border-green-700 px-5 py-3 font-medium text-green-700 transition hover:bg-green-50 disabled:opacity-50 sm:w-auto"
             >
-              {isDetectingLocation ? "Detecting..." : "Auto Detect Location"}
+              {isDetectingLocation
+                ? "Detecting..."
+                : "Auto Detect Location"}
             </button>
 
             {location && (
