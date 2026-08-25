@@ -15,7 +15,6 @@ function ReportActivity() {
   } | null>(null)
 
   const [locationError, setLocationError] = useState("")
-
   const [description, setDescription] = useState("")
 
   const [formError, setFormError] = useState("")
@@ -36,7 +35,6 @@ function ReportActivity() {
     }
   }
 
-  // Remove photo function
   const handleRemovePhoto = () => {
     if (photoPreview) {
       URL.revokeObjectURL(photoPreview)
@@ -128,20 +126,23 @@ function ReportActivity() {
 
     try {
       const title = `Report - ${new Date().toLocaleDateString()}`
-      const locationString = `${location.latitude},${location.longitude}`
 
       await submitReport(
         photoFile,
         title,
-        description,
-        locationString
+        description.trim(),
+        location.latitude,
+        location.longitude
       )
 
       navigate("/success")
     } catch (error) {
       console.error("Submission failed:", error)
+
       setFormError(
-        "Something went wrong submitting your report. Please try again."
+        error instanceof Error
+          ? error.message
+          : "Something went wrong submitting your report. Please try again."
       )
     } finally {
       setIsSubmitting(false)
