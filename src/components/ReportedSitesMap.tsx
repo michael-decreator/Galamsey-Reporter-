@@ -14,6 +14,8 @@ type Coordinates = {
   lng: number
 }
 
+type SelectedReport = ReportWithId & Coordinates
+
 const mapCenter: Coordinates = {
   lat: 5.7,
   lng: -1.96,
@@ -111,6 +113,7 @@ function ReportedSitesMap() {
   const [userLocation, setUserLocation] = useState<Coordinates | null>(null)
   const [reports, setReports] = useState<ReportWithId[]>([])
   const [isFullscreen, setIsFullscreen] = useState(false)
+  const [selectedReport, setSelectedReport] = useState<SelectedReport | null>(null)
 
   const containerRef = useRef<HTMLDivElement | null>(null)
   const mapRef = useRef<L.Map | null>(null)
@@ -237,6 +240,10 @@ function ReportedSitesMap() {
               position={[reportLocation.lat, reportLocation.lng]}
               icon={reportIcon}
               title={report.title}
+              eventHandlers={{
+                click: () =>
+                  setSelectedReport({ ...report, ...reportLocation }),
+              }}
             />
           )
         })}
@@ -276,6 +283,76 @@ function ReportedSitesMap() {
           </svg>
         )}
       </button>
+
+      {/* Report Detail Modal — matches ReportsDashboard's modal styling */}
+      {selectedReport && (
+        <div
+          onClick={() => setSelectedReport(null)}
+          className="fixed inset-0 z-[2000] flex items-center justify-center bg-black/60 p-4"
+        >
+          <div
+            onClick={(event) => event.stopPropagation()}
+            className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-6 shadow-lg"
+          >
+            <div className="mb-4 flex items-start justify-between">
+              <h2 className="text-xl font-bold text-gray-900">
+                {selectedReport.title}
+              </h2>
+
+              <button
+                type="button"
+                onClick={() => setSelectedReport(null)}
+                className="ml-4 text-gray-400 hover:text-gray-600"
+              >
+                ✕
+              </button>
+            </div>
+
+            {selectedReport.photoUrl && (
+              <a
+                href={selectedReport.photoUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mb-4 block"
+              >
+                <img
+                  src={selectedReport.photoUrl}
+                  alt={selectedReport.title}
+                  className="h-56 w-full cursor-pointer rounded-lg object-cover"
+                />
+              </a>
+            )}
+
+            <h3 className="mb-1 text-sm font-semibold text-gray-800">
+              Description
+            </h3>
+            <p className="mb-4 text-sm text-gray-600">
+              {selectedReport.description}
+            </p>
+
+            <h3 className="mb-1 text-sm font-semibold text-gray-800">
+              Location
+            </h3>
+            <p className="mb-2 text-sm text-gray-600">
+              Latitude: {selectedReport.lat} &nbsp;|&nbsp; Longitude: {selectedReport.lng}
+            </p>
+
+            <a
+              href={`https://www.google.com/maps?q=${selectedReport.lat},${selectedReport.lng}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mb-4 inline-block text-sm font-medium text-green-700 hover:underline"
+            >
+              View on map
+            </a>
+
+            <h3 className="mb-1 text-sm font-semibold text-gray-800">
+              Report ID
+            </h3>
+            <p className="text-xs text-gray-400">{selectedReport.id}</p>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
