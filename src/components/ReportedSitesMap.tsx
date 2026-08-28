@@ -1,12 +1,9 @@
-import { GoogleMap, Marker, useJsApiLoader } from "@react-google-maps/api"
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
+import { MapContainer, TileLayer, Marker, useMap } from "react-leaflet"
+import L from "leaflet"
+import "leaflet/dist/leaflet.css"
 import { subscribeToReports } from "../services/reportService"
 import type { ReportData } from "../types/report"
-
-const containerStyle = {
-  width: "100%",
-  height: "100%",
-}
 
 type ReportWithId = ReportData & {
   id: string
@@ -56,25 +53,67 @@ function parseLocation(location: string): Coordinates | null {
   const lat = Number(latString)
   const lng = Number(lngString)
 
-  if (
-    !Number.isFinite(lat) ||
-    !Number.isFinite(lng)
-  ) {
+  if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
     return null
   }
 
   return { lat, lng }
 }
 
-function ReportedSitesMap() {
-  const { isLoaded, loadError } = useJsApiLoader({
-    googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY,
+// Leaflet's default marker icons don't bundle cleanly with Vite, so we
+// build simple colored pin icons ourselves instead of relying on
+// external image assets or a CDN.
+function createIcon(color: "blue" | "red") {
+  const fillColor = color === "blue" ? "#2563EB" : "#DC2626"
+
+  return L.divIcon({
+    className: "",
+    html: `
+      <svg xmlns="http://www.w3.org/2000/svg" width="28" height="40" viewBox="0 0 28 40">
+        <path d="M14 0C6.3 0 0 6.3 0 14c0 10.5 14 26 14 26s14-15.5 14-26c0-7.7-6.3-14-14-14z" fill="${fillColor}"/>
+        <circle cx="14" cy="14" r="5.5" fill="white"/>
+      </svg>
+    `,
+    iconSize: [28, 40],
+    iconAnchor: [14, 40],
   })
+}
 
-  const [userLocation, setUserLocation] =
-    useState<Coordinates | null>(null)
+const userIcon = createIcon("blue")
+const reportIcon = createIcon("red")
 
+// react-leaflet's MapContainer only reads `center`/`zoom` on first
+// render, so this helper re-centers the map whenever those values
+// change (e.g. once the user's location is detected).
+function RecenterMap({ center, zoom }: { center: Coordinates; zoom: number }) {
+  const map = useMap()
+
+  useEffect(() => {
+    map.setView([center.lat, center.lng], zoom)
+  }, [center.lat, center.lng, zoom, map])
+
+  return null
+}
+
+// Grabs the underlying Leaflet map instance so the parent component can
+// call imperative methods on it (here, invalidateSize on fullscreen toggle).
+function MapInstanceSetter({ onMap }: { onMap: (map: L.Map) => void }) {
+  const map = useMap()
+
+  useEffect(() => {
+    onMap(map)
+  }, [map, onMap])
+
+  return null
+}
+
+function ReportedSitesMap() {
+  const [userLocation, setUserLocation] = useState<Coordinates | null>(null)
   const [reports, setReports] = useState<ReportWithId[]>([])
+  const [isFullscreen, setIsFullscreen] = useState(false)
+
+  const containerRef = useRef<HTMLDivElement | null>(null)
+  const mapRef = useRef<L.Map | null>(null)
 
   useEffect(() => {
     const unsubscribe = subscribeToReports((liveReports) => {
@@ -88,9 +127,6 @@ function ReportedSitesMap() {
     navigator.geolocation.getCurrentPosition(
       (position) => {
         const { latitude, longitude } = position.coords
-
-        console.log("User latitude:", latitude)
-        console.log("User longitude:", longitude)
 
         setUserLocation({
           lat: latitude,
@@ -108,6 +144,38 @@ function ReportedSitesMap() {
     )
   }, [])
 
+  // Keep isFullscreen in sync with the actual browser fullscreen state
+  // (handles the Esc key and any other way the user exits fullscreen),
+  // and resize the map once the container's dimensions change.
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      const isNowFullscreen = document.fullscreenElement === containerRef.current
+      setIsFullscreen(isNowFullscreen)
+
+      // Wait for the fullscreen transition to finish before Leaflet
+      // recalculates tile layout, or it measures the old size.
+      window.setTimeout(() => {
+        mapRef.current?.invalidateSize()
+      }, 100)
+    }
+
+    document.addEventListener("fullscreenchange", handleFullscreenChange)
+
+    return () => {
+      document.removeEventListener("fullscreenchange", handleFullscreenChange)
+    }
+  }, [])
+
+  const toggleFullscreen = () => {
+    if (!containerRef.current) return
+
+    if (document.fullscreenElement) {
+      document.exitFullscreen()
+    } else {
+      containerRef.current.requestFullscreen()
+    }
+  }
+
   const nearbyReports = userLocation
     ? reports.filter((report) => {
         const reportLocation = parseLocation(report.location)
@@ -116,52 +184,43 @@ function ReportedSitesMap() {
           return false
         }
 
-        const distance = calculateDistance(
-          userLocation,
-          reportLocation
-        )
+        const distance = calculateDistance(userLocation, reportLocation)
 
         return distance <= NEARBY_RADIUS_KM
       })
     : []
 
-  if (loadError) {
-    return (
-      <div className="flex h-56 w-full items-center justify-center rounded-xl bg-gray-100 p-4 sm:h-72 md:h-96 lg:h-[550px]">
-        <p className="text-center text-red-600">
-          Unable to load Google Maps.
-        </p>
-      </div>
-    )
-  }
-
-  if (!isLoaded) {
-    return (
-      <div className="flex h-56 w-full items-center justify-center rounded-xl bg-gray-100 sm:h-72 md:h-96 lg:h-[550px]">
-        <p className="text-gray-500">Loading map...</p>
-      </div>
-    )
-  }
+  const center = userLocation ?? mapCenter
+  const zoom = userLocation ? 13 : 8
 
   return (
-    <div className="relative h-56 w-full overflow-hidden rounded-xl sm:h-72 md:h-96 lg:h-[550px]">
-      <GoogleMap
-        mapContainerStyle={containerStyle}
-        center={userLocation ?? mapCenter}
-        zoom={userLocation ? 13 : 8}
-        options={{
-          streetViewControl: false,
-          mapTypeControl: false,
-          fullscreenControl: true,
-        }}
+    <div
+      ref={containerRef}
+      className={
+        isFullscreen
+          ? "relative h-full w-full bg-white"
+          : "relative h-56 w-full overflow-hidden rounded-xl sm:h-72 md:h-96 lg:h-[550px]"
+      }
+    >
+      <MapContainer
+        center={[center.lat, center.lng]}
+        zoom={zoom}
+        style={{ width: "100%", height: "100%" }}
+        scrollWheelZoom
       >
+        <TileLayer
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        />
+
+        <RecenterMap center={center} zoom={zoom} />
+        <MapInstanceSetter onMap={(map) => (mapRef.current = map)} />
+
         {userLocation && (
           <Marker
-            position={userLocation}
+            position={[userLocation.lat, userLocation.lng]}
+            icon={userIcon}
             title="Your current location"
-            icon={{
-              url: "http://maps.google.com/mapfiles/ms/icons/blue-dot.png",
-            }}
           />
         )}
 
@@ -175,17 +234,16 @@ function ReportedSitesMap() {
           return (
             <Marker
               key={report.id}
-              position={reportLocation}
+              position={[reportLocation.lat, reportLocation.lng]}
+              icon={reportIcon}
               title={report.title}
-              icon={{
-                url: "http://maps.google.com/mapfiles/ms/icons/red-dot.png",
-              }}
             />
           )
         })}
-      </GoogleMap>
+      </MapContainer>
 
-      <div className="absolute left-3 top-3 rounded-lg bg-white px-3 py-2 shadow-md">
+      {/* Centered top so it never overlaps Leaflet's top-left zoom controls */}
+      <div className="absolute left-1/2 top-3 z-[1000] -translate-x-1/2 rounded-lg bg-white px-3 py-2 text-center shadow-md">
         <p className="text-sm font-semibold text-gray-900">
           {nearbyReports.length} reported site
           {nearbyReports.length !== 1 ? "s" : ""} nearby
@@ -195,6 +253,29 @@ function ReportedSitesMap() {
           Within {NEARBY_RADIUS_KM} km
         </p>
       </div>
+
+      <button
+        type="button"
+        onClick={toggleFullscreen}
+        aria-label={isFullscreen ? "Exit fullscreen" : "View fullscreen"}
+        className="absolute right-3 top-3 z-[1000] flex h-9 w-9 items-center justify-center rounded-lg bg-white shadow-md hover:bg-gray-50"
+      >
+        {isFullscreen ? (
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M8 3v3a2 2 0 0 1-2 2H3" />
+            <path d="M21 8h-3a2 2 0 0 1-2-2V3" />
+            <path d="M3 16h3a2 2 0 0 1 2 2v3" />
+            <path d="M16 21v-3a2 2 0 0 1 2-2h3" />
+          </svg>
+        ) : (
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M8 3H5a2 2 0 0 0-2 2v3" />
+            <path d="M21 8V5a2 2 0 0 0-2-2h-3" />
+            <path d="M3 16v3a2 2 0 0 0 2 2h3" />
+            <path d="M16 21h3a2 2 0 0 0 2-2v-3" />
+          </svg>
+        )}
+      </button>
     </div>
   )
 }
