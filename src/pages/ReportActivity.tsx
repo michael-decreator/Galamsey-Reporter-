@@ -150,41 +150,57 @@ function ReportActivity() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 px-3 py-6 sm:px-4 sm:py-8">
+    <div className="min-h-screen bg-gray-100 px-3 py-4 sm:px-4 sm:py-6">
       <div className="mx-auto w-full max-w-2xl rounded-2xl bg-white p-4 shadow-md sm:p-6">
-        <h1 className="mb-2 text-xl font-bold text-gray-900 sm:text-2xl">
-          Report Illegal Mining
-        </h1>
 
-        <p className="mb-6 text-gray-600">
-          Your report can be submitted anonymously.
-        </p>
+        {/* Welcome Heading */}
+        <div className="mb-5 text-center">
+          <h1 className="text-2xl font-bold text-gray-900 sm:text-3xl">
+            Welcome to Ghana's First Guided Report App
+          </h1>
 
-        {/* Photo Section */}
-        <div className="mb-6">
-          <h2 className="mb-3 text-lg font-semibold text-gray-800">
-            Photo Evidence
+          <p className="mt-2 text-sm text-gray-600 sm:text-base">
+            Help us document suspected illegal mining activities by providing
+            a photo, your location, and a short description.
+          </p>
+        </div>
+
+        {/* Report Heading */}
+        <div className="mb-5">
+          <h2 className="text-xl font-bold text-gray-900 sm:text-2xl">
+            Send a Report
           </h2>
 
-          <div className="flex min-h-44 flex-col items-center justify-center rounded-xl border-2 border-dashed border-gray-300 bg-gray-50 p-4 sm:min-h-48 sm:p-6">
+          <p className="mt-1 text-sm text-gray-500">
+            Follow the steps below to submit your report.
+          </p>
+        </div>
+
+        {/* Photo Section */}
+        <div className="mb-4">
+          <h3 className="mb-2 text-base font-semibold text-gray-800">
+            📸 Photo Evidence
+          </h3>
+
+          <div className="rounded-xl border-2 border-dashed border-gray-300 bg-gray-50 p-3 sm:p-4">
             {photoPreview ? (
               <img
                 src={photoPreview}
                 alt="Selected evidence"
-                className="mb-4 max-h-64 w-full rounded-lg object-cover"
+                className="mb-3 h-40 w-full rounded-lg object-cover sm:h-48"
               />
             ) : (
-              <p className="mb-4 text-center text-gray-500">
+              <p className="mb-3 text-center text-sm text-gray-500">
                 Take a photo or select one from your device
               </p>
             )}
 
             {photoPreview ? (
-              <div className="flex w-full gap-3 sm:w-auto">
+              <div className="flex gap-2">
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
-                  className="flex-1 rounded-lg bg-green-700 px-5 py-3 font-medium text-white transition hover:bg-green-800 sm:flex-none"
+                  className="flex-1 rounded-lg bg-green-700 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-green-800"
                 >
                   Change Photo
                 </button>
@@ -192,7 +208,7 @@ function ReportActivity() {
                 <button
                   type="button"
                   onClick={handleRemovePhoto}
-                  className="flex-1 rounded-lg border border-red-300 px-5 py-3 font-medium text-red-600 transition hover:bg-red-50 sm:flex-none"
+                  className="flex-1 rounded-lg border border-red-300 px-4 py-2.5 text-sm font-medium text-red-600 transition hover:bg-red-50"
                 >
                   Remove
                 </button>
@@ -201,7 +217,7 @@ function ReportActivity() {
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="w-full rounded-lg bg-green-700 px-5 py-3 font-medium text-white transition hover:bg-green-800 sm:w-auto"
+                className="w-full rounded-lg bg-green-700 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-green-800"
               >
                 Take Photo
               </button>
@@ -219,17 +235,17 @@ function ReportActivity() {
         </div>
 
         {/* Location Section */}
-        <div className="mb-6">
-          <h2 className="mb-3 text-lg font-semibold text-gray-800">
-            Location
-          </h2>
+        <div className="mb-4">
+          <h3 className="mb-2 text-base font-semibold text-gray-800">
+            📍 Your Location
+          </h3>
 
-          <div className="rounded-xl border border-gray-300 bg-gray-50 p-4">
+          <div className="rounded-xl border border-gray-300 bg-gray-50 p-3">
             <button
               type="button"
               onClick={handleDetectLocation}
               disabled={isDetectingLocation}
-              className="w-full rounded-lg border border-green-700 px-5 py-3 font-medium text-green-700 transition hover:bg-green-50 disabled:opacity-50 sm:w-auto"
+              className="w-full rounded-lg border border-green-700 px-4 py-2.5 text-sm font-medium text-green-700 transition hover:bg-green-50 disabled:opacity-50 sm:w-auto"
             >
               {isDetectingLocation
                 ? "Detecting..."
@@ -237,14 +253,13 @@ function ReportActivity() {
             </button>
 
             {location && (
-              <p className="mt-3 break-words text-sm text-gray-600">
-                Location detected: {location.latitude.toFixed(6)},{" "}
-                {location.longitude.toFixed(6)}
+              <p className="mt-2 text-sm text-green-700">
+                ✓ Location detected
               </p>
             )}
 
             {locationError && (
-              <p className="mt-3 text-sm text-red-600">
+              <p className="mt-2 text-sm text-red-600">
                 {locationError}
               </p>
             )}
@@ -252,10 +267,10 @@ function ReportActivity() {
         </div>
 
         {/* Description Section */}
-        <div className="mb-6">
-          <h2 className="mb-3 text-lg font-semibold text-gray-800">
-            Description
-          </h2>
+        <div className="mb-4">
+          <h3 className="mb-2 text-base font-semibold text-gray-800">
+            📝 Describe What You Observed
+          </h3>
 
           <textarea
             value={description}
@@ -263,14 +278,14 @@ function ReportActivity() {
               setDescription(event.target.value)
               setFormError("")
             }}
-            placeholder="Describe what you observed..."
-            rows={5}
+            placeholder="Briefly describe what you observed..."
+            rows={3}
             maxLength={500}
-            className="w-full resize-none rounded-xl border border-gray-300 bg-gray-50 p-4 text-gray-800 outline-none transition focus:border-green-700 focus:ring-2 focus:ring-green-100"
+            className="w-full resize-none rounded-xl border border-gray-300 bg-gray-50 p-3 text-sm text-gray-800 outline-none transition focus:border-green-700 focus:ring-2 focus:ring-green-100"
           />
 
-          <div className="mt-2 flex justify-end">
-            <span className="text-sm text-gray-500">
+          <div className="mt-1 flex justify-end">
+            <span className="text-xs text-gray-500">
               {description.length}/500
             </span>
           </div>
@@ -278,7 +293,7 @@ function ReportActivity() {
 
         {/* Form Error */}
         {formError && (
-          <p className="mb-4 text-sm font-medium text-red-600">
+          <p className="mb-3 rounded-lg bg-red-50 p-3 text-sm font-medium text-red-600">
             {formError}
           </p>
         )}
@@ -288,10 +303,14 @@ function ReportActivity() {
           type="button"
           onClick={handleSubmit}
           disabled={isSubmitting}
-          className="w-full rounded-xl bg-green-700 px-6 py-3 font-semibold text-white transition hover:bg-green-800 disabled:opacity-50"
+          className="w-full rounded-xl bg-green-700 px-6 py-3.5 text-base font-semibold text-white shadow-sm transition hover:bg-green-800 disabled:opacity-50"
         >
           {isSubmitting ? "Sending..." : "Send Report"}
         </button>
+
+        <p className="mt-2 text-center text-xs text-gray-500">
+          Your report can be submitted anonymously.
+        </p>
       </div>
     </div>
   )
